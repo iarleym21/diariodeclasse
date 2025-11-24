@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Notas Escolares</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div id="login-container" class="flex items-center justify-center min-h-screen">
+      <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-gray-900">Login do Professor</h2>
+
+        <div id="login-error" class="text-red-500 text-sm text-center hidden">Usuário ou senha inválidos.</div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value="admin"
+              required
+              class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value="123"
+              required
+              class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div class="text-xs text-gray-500">
+            <p>Use <strong>admin</strong> / <strong>123</strong> para entrar.</p>
+          </div>
+          <button
+            id="login-button"
+            type="submit"
+            class="w-full py-2 px-4 font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            Entrar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="app-container" class="hidden min-h-screen bg-gray-50">
+      <header class="bg-white shadow-md sticky top-0 z-10">
+        <nav class="container mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <h1 class="text-2xl font-bold text-blue-700 flex-shrink-0">Painel do Professor</h1>
+
+          <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <select
+              id="sala-selector"
+              aria-label="Selecionar Sala"
+              class="w-full md:w-auto p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></select>
+            <select
+              id="materia-selector"
+              aria-label="Selecionar Matéria"
+              class="w-full md:w-auto p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></select>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
+            <input
+              type="text"
+              id="search-bar"
+              placeholder="Pesquisar aluno..."
+              class="w-full md:w-auto p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+
+            <div class="flex gap-2 items-center">
+              <button
+                id="save-button"
+                class="w-full md:w-auto py-2 px-4 font-semibold text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                Salvar
+              </button>
+              <span id="save-message" class="text-sm text-green-700 hidden">Salvo!</span>
+            </div>
+
+            <button
+              id="logout-button"
+              class="w-full md:w-auto py-2 px-4 font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+              Sair
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <main class="container mx-auto p-4 mt-6">
+        <h2 id="table-title" class="text-xl font-semibold text-gray-800 mb-4"></h2>
+
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aluno</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unidade 1</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unidade 2</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unidade 3</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Frequência (%)</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Média Final</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody id="grade-table-body" class="divide-y divide-gray-200">
+              </tbody>
+          </table>
+        </div>
+
+        <div id="failure-warning" class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-md hidden" role="alert">
+          <h3 class="font-bold">Atenção!</h3>
+          <p>Existem alunos com risco de reprovação ou já reprovados nesta turma.</p>
+          <ul id="failure-list" class="list-disc list-inside mt-2 text-sm"></ul>
+        </div>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
