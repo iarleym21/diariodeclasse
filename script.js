@@ -1,154 +1,94 @@
-// "Modo Estrito" para melhores práticas
 "use strict"
 
-// --- 1. ESTADO DA APLICAÇÃO E CONSTANTES ---
-
 let db
+const DB_STORAGE_KEY = "sistemaNotasDB_v2"
 
 const appState = {
   salaAtual: "",
   materiaAtual: "",
   filtroBusca: "",
+  viewAtual: "notas",
+  dataSelecionada: new Date().toISOString().split('T')[0]
 }
 
-const DB_STORAGE_KEY = "sistemaNotasDB"
-
-// --- 2. LÓGICA DE DADOS ---
+const HORARIOS = [
+  "07:10 - 07:45",
+  "07:45 - 08:30",
+  "08:30 - 09:15",
+  "09:15 - 10:00",
+  "10:20 - 11:05",
+  "11:05 - 11:30"
+]
 
 const getInitialData = () => {
-  const nomes3TIM1 = [
-    "Alexandre Borges",
-    "Beatriz Lima",
-    "Carlos Eduardo",
-    "Diana Fernandes",
-    "Eric Santos",
-    "Fabiana Melo",
-    "Gabriel Alves",
-    "Helena Costa",
-  ]
-  const nomes3TIM2 = [
-    "Igor Nascimento",
-    "Juliana Pereira",
-    "Kevin Souza",
-    "Laura Batista",
-    "Miguel Castro",
-    "Natália Oliveira",
-    "Otávio Martins",
-    "Paula Ribeiro",
-  ]
-  const nomes3TIM3 = [
-    "ANA CLARA MENDES DO NASCIMENTO",
-    "BIATRIZ DOS SANTOS LIMA",
-    "CHARLISSON DOS SANTOS SILVA",
-    "CHRYSTIAN FELIPE DE JESUS SOUZA LIMA",
-    "CINTIA DO NASCIMENTO SENA",
-    "DAVI SANTANA DOS SANTOS",
-    "ELIAS GUILHERME DE JESUS SANTOS",
-    "EMELY SANTOS DE JESUS",
-    "EVELLYN LEITE DOS SANTOS",
-    "GABRYEL SANTOS ALMEIDA",
-    "GRAZIELE SILVA MENEZES SANTOS",
-    "GUILHERME DE ALMEIDA SANTOS",
-    "HEMILY VITORIA DOS SANTOS CARMO",
-    "INGRID MENDES SILVA",
-    "IARLEY MENDES REIS DE JESUS",
-    "INGRID VITORIA DAMASCENO VILARES DOS SANTOS",
-    "ISABELA SANTOS DOS REIS",
-    "JOEL VITOR PEREIRA DA SILVA",
-    "ΚΑΙO DE SOUSA RIBEIRO",
-    "KAUA DA CONCEICAO BATISTA",
-    "LUDMILA GONCALVES SANTOS",
-    "LUIZ MIGUEL SILVA SANTOS",
-    "MARCONES WILLIAM SANTOS ALVES",
-    "NADIA FERNANDES SANTOS",
-    "RAIANY NATALY BATISTA RABELO",
-    "SAMARA DE OLIVEIRA COSTA",
-    "SARAH IRES REIS SANTOS",
-    "THAILANE CARVALHO DOS SANTOS",
-    "VERENA KAELLEN BATISTA PEREIRA",
-    "VITOR GABRIEL LIMA VENTURA DOS SANTOS",
-    "WALISSON DA SILVA BULHOSA",
-    "WILLIAM BATISTA SANTANA",
-  ]
-  const nomes3TIM4 = [
-    "Quintino Rocha",
-    "Raquel Gomes",
-    "Samuel Dantas",
-    "Tatiana Nunes",
-    "Ulisses Farias",
-    "Valentina Barros",
-    "Wesley Moreira",
-    "Yasmin Correia",
+  const nomesAlunos = [
+    "Ana Clara Mendes", "Biatriz dos Santos", "Charlisson Silva", "Davi Santana",
+    "Elias Guilherme", "Emely Santos", "Evellyn Leite", "Gabryel Almeida",
+    "Guilherme Almeida", "Hemily Vitoria", "Ingrid Mendes", "Iarley Mendes",
+    "Isabela Santos", "Joel Vitor", "Kaio de Sousa", "Kaua Batista",
+    "Ludmila Goncalves", "Luiz Miguel", "Marcones William", "Nadia Fernandes",
+    "Raiany Nataly", "Samara de Oliveira", "Sarah Ires", "Thailane Carvalho",
+    "Verena Kaellen", "Vitor Gabriel", "Walisson Silva", "William Batista"
   ]
 
-  const todasAsMaterias = [
-    "Análise e Projeto Sistema",
-    "Arte",
-    "Biologia",
-    "Física",
-    "Geografia",
-    "Higiene, Saúde e Seg. Trab.",
-    "Inst. e Manut. Computadores",
-    "Internet e Prog. Web",
-    "Linguagem de Programação",
-    "Matemática",
-    "Mundo do Trabalho",
-    "Programação Visual",
-    "Projeto Experimental II",
-    "Português",
-    "Química",
-    "Redes de Computadores II",
-    "Segurança de Sist. Redes",
-  ]
+  const materias = ["Matemática", "Português", "História", "Geografia", "Programação Web"]
 
-  const criarListaAlunos = (nomes, idStart = 1) => {
+  const criarAlunos = (nomes, idStart) => {
     return nomes.map((nome, index) => ({
       id: idStart + index,
       nome: nome,
       u1: null,
       u2: null,
       u3: null,
-      freq: 100,
+      freqGeral: 100,
+      chamada: {}
     }))
   }
 
-  const criarMateriasParaSala = (nomesAlunos, idStart) => {
-    const materias = {}
-    todasAsMaterias.forEach((materia) => {
-      materias[materia] = criarListaAlunos(nomesAlunos, idStart)
-    })
-    return materias
-  }
+  const turmas = ["3TIM1", "3TIM2", "3TIM3"]
+  const banco = {}
 
-  return {
-    "3TIM1": criarMateriasParaSala(nomes3TIM1, 100),
-    "3TIM2": criarMateriasParaSala(nomes3TIM2, 200),
-    "3TIM3": criarMateriasParaSala(nomes3TIM3, 300),
-    "3TIM4": criarMateriasParaSala(nomes3TIM4, 400),
-  }
+  turmas.forEach((turma, i) => {
+    banco[turma] = {}
+    materias.forEach(materia => {
+      banco[turma][materia] = criarAlunos(nomesAlunos, (i + 1) * 1000)
+    })
+  })
+
+  return banco
 }
 
 const carregarDados = () => {
   const dadosSalvos = localStorage.getItem(DB_STORAGE_KEY)
   try {
     db = dadosSalvos ? JSON.parse(dadosSalvos) : getInitialData()
+    
+    Object.keys(db).forEach(turma => {
+      Object.keys(db[turma]).forEach(materia => {
+          db[turma][materia].forEach(aluno => {
+              if (!aluno.chamada) aluno.chamada = {}
+          })
+      })
+    })
+
   } catch (error) {
     console.error("Erro ao carregar dados:", error)
     db = getInitialData()
   }
-  appState.salaAtual = Object.keys(db)[0]
-  appState.materiaAtual = Object.keys(db[appState.salaAtual])[0]
+  
+  if (!appState.salaAtual) appState.salaAtual = Object.keys(db)[0]
+  if (!appState.materiaAtual) appState.materiaAtual = Object.keys(db[appState.salaAtual])[0]
+  
+  document.getElementById("date-picker").value = appState.dataSelecionada
 }
 
 const salvarDados = () => {
-  try {
-    localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db))
-  } catch (error) {
-    console.error("Erro ao salvar dados:", error)
-  }
+  localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db))
+  const msg = document.getElementById("save-message")
+  msg.classList.remove("hidden")
+  
+  setTimeout(() => msg.classList.add("hidden"), 2000)
 }
-
-// --- 3. LÓGICA DE NEGÓCIO ---
 
 const calcularMedia = (aluno) => {
   const notas = [aluno.u1, aluno.u2, aluno.u3].filter((n) => n !== null && n !== "")
@@ -157,192 +97,262 @@ const calcularMedia = (aluno) => {
   return soma / notas.length
 }
 
-const getStatus = (aluno, media) => {
-  if (aluno.u1 == 0 && aluno.u2 == 0 && aluno.u3 == 0) {
-    return { texto: "Desistente", classe: "status-desistente" }
-  }
-  if (aluno.freq < 75) {
-    return { texto: "Reprovado (Frequência)", classe: "status-reprovado" }
-  }
-
-  const notasPreenchidas = [aluno.u1, aluno.u2, aluno.u3].filter((n) => n !== null && n !== "")
-
-  if (notasPreenchidas.length < 3) {
-    if (media === null) {
-      return { texto: "Pendente", classe: "text-gray-500" }
-    } else {
-      return { texto: `Pendente (Média ${media.toFixed(1)})`, classe: "text-gray-500" }
-    }
-  }
-
-  if (media < 5) {
-    return { texto: `Reprovado (Média ${media.toFixed(1)})`, classe: "status-reprovado" }
-  }
-  return { texto: `Aprovado (Média ${media.toFixed(1)})`, classe: "status-aprovado" }
-}
-
-// --- 4. RENDERIZAÇÃO ---
-
-const popularSeletores = () => {
-  const seletorSala = document.getElementById("sala-selector")
-  const seletorMateria = document.getElementById("materia-selector")
-
-  seletorSala.innerHTML = ""
-  seletorMateria.innerHTML = ""
-
-  Object.keys(db).forEach((sala) => {
-    const option = document.createElement("option")
-    option.value = sala
-    option.textContent = sala
-    seletorSala.appendChild(option)
-  })
-  seletorSala.value = appState.salaAtual
-
-  Object.keys(db[appState.salaAtual]).forEach((materia) => {
-    const option = document.createElement("option")
-    option.value = materia
-    option.textContent = materia
-    seletorMateria.appendChild(option)
-  })
-  seletorMateria.value = appState.materiaAtual
-}
-
-const criarInput = (id, field, valor, max, step) => {
-  const input = document.createElement("input")
-  input.type = "number"
-  input.min = 0
-  input.max = max
-  input.step = step
-  input.className =
-    "w-16 text-center p-1 border rounded-md border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
-  input.value = valor
-  input.dataset.id = id
-  input.dataset.field = field
-  input.addEventListener("change", handleMudancaNota)
-  return input
-}
-
-const criarLinhaAluno = (aluno) => {
+const getStatus = (aluno) => {
   const media = calcularMedia(aluno)
-  const status = getStatus(aluno, media)
-
-  const tr = document.createElement("tr")
-  tr.className = "hover:bg-gray-50"
-
-  const nomeTd = document.createElement("td")
-  nomeTd.className = `px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${
-    status.classe === "status-desistente" ? status.classe : ""
-  }`
-  nomeTd.textContent = aluno.nome
-
-  const campos = [
-    { field: "u1", valor: aluno.u1, max: 10, step: 0.1 },
-    { field: "u2", valor: aluno.u2, max: 10, step: 0.1 },
-    { field: "u3", valor: aluno.u3, max: 10, step: 0.1 },
-    { field: "freq", valor: aluno.freq, max: 100, step: 1 },
-  ]
-
-  const inputsTds = campos.map((campo) => {
-    const td = document.createElement("td")
-    td.className = "px-6 py-4 whitespace-nowrap text-center"
-    const input = criarInput(aluno.id, campo.field, campo.valor, campo.max, campo.step)
-    td.appendChild(input)
-    return td
-  })
-
-  const mediaTd = document.createElement("td")
-  mediaTd.className = `px-6 py-4 whitespace-nowrap text-sm text-center font-bold ${status.classe}`
-  mediaTd.textContent = media !== null ? media.toFixed(1) : "---"
-
-  const statusTd = document.createElement("td")
-  statusTd.className = `px-6 py-4 whitespace-nowrap text-sm ${status.classe}`
-  statusTd.textContent = status.texto
-
-  tr.appendChild(nomeTd)
-  inputsTds.forEach((td) => tr.appendChild(td))
-  tr.appendChild(mediaTd)
-  tr.appendChild(statusTd)
-
-  return { tr, status }
+  
+  if (aluno.u1 == 0 && aluno.u2 == 0 && aluno.u3 == 0) {
+      return { texto: "Desistente", classe: "status-desistente" }
+  }
+  if (aluno.freqGeral < 75) {
+      return { texto: "Reprovado (Freq)", classe: "status-reprovado" }
+  }
+  
+  const notasPreenchidas = [aluno.u1, aluno.u2, aluno.u3].filter((n) => n !== null && n !== "")
+  if (notasPreenchidas.length < 3) {
+      return { texto: "Pendente", classe: "text-gray-500 font-medium italic" }
+  }
+  
+  if (media < 5) {
+      return { texto: `Reprovado (${media.toFixed(1)})`, classe: "status-reprovado" }
+  }
+  return { texto: `Aprovado (${media.toFixed(1)})`, classe: "status-aprovado" }
 }
 
-const renderizarTabela = () => {
-  const tbody = document.getElementById("grade-table-body")
-  const tituloTabela = document.getElementById("table-title")
-  const avisoReprovados = document.getElementById("failure-warning")
-  const listaReprovados = document.getElementById("failure-list")
-
-  tbody.innerHTML = ""
-  listaReprovados.innerHTML = ""
-  let alunosReprovadosCount = 0
-
-  tituloTabela.textContent = `Turma: ${appState.salaAtual} - Matéria: ${appState.materiaAtual}`
-
-  const alunos = db[appState.salaAtual][appState.materiaAtual]
-  const alunosFiltrados = alunos.filter((aluno) =>
-    aluno.nome.toLowerCase().includes(appState.filtroBusca.toLowerCase()),
-  )
-
-  if (alunosFiltrados.length === 0) {
-    const msg = appState.filtroBusca
-      ? `Nenhum aluno encontrado para "${appState.filtroBusca}".`
-      : "Nenhum aluno encontrado."
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-gray-500">${msg}</td></tr>`
-    avisoReprovados.classList.add("hidden")
-    return
-  }
-
-  alunosFiltrados.forEach((aluno) => {
-    const { tr, status } = criarLinhaAluno(aluno)
-    tbody.appendChild(tr)
-
-    if (status.classe === "status-reprovado" || status.classe === "status-desistente") {
-      alunosReprovadosCount++
-      const li = document.createElement("li")
-      li.textContent = `${aluno.nome}: ${status.texto}`
-      listaReprovados.appendChild(li)
+const renderizarControles = () => {
+    const selSala = document.getElementById("sala-selector")
+    const selMat = document.getElementById("materia-selector")
+    
+    if (selSala.options.length === 0) {
+      Object.keys(db).forEach(s => selSala.add(new Option(s, s)))
+      selSala.value = appState.salaAtual
     }
-  })
+    
+    selMat.innerHTML = ""
+    Object.keys(db[appState.salaAtual]).forEach(m => selMat.add(new Option(m, m)))
+    selMat.value = appState.materiaAtual
 
-  if (alunosReprovadosCount > 0) {
-    avisoReprovados.classList.remove("hidden")
-  } else {
-    avisoReprovados.classList.add("hidden")
-  }
+    const btnNotas = document.getElementById("tab-notas")
+    const btnFreq = document.getElementById("tab-freq")
+    const viewNotas = document.getElementById("view-notas")
+    const viewFreq = document.getElementById("view-freq")
+    const dateControl = document.getElementById("date-control-container")
+
+    if (appState.viewAtual === 'notas') {
+        btnNotas.className = "tab-active pb-3 px-2 text-sm uppercase tracking-wider transition-all cursor-default"
+        btnFreq.className = "tab-inactive pb-3 px-2 text-sm uppercase tracking-wider transition-all cursor-pointer"
+        viewNotas.classList.remove("hidden")
+        viewFreq.classList.add("hidden")
+        dateControl.classList.add("hidden")
+    } else {
+        btnNotas.className = "tab-inactive pb-3 px-2 text-sm uppercase tracking-wider transition-all cursor-pointer"
+        btnFreq.className = "tab-active pb-3 px-2 text-sm uppercase tracking-wider transition-all cursor-default"
+        viewNotas.classList.add("hidden")
+        viewFreq.classList.remove("hidden")
+        dateControl.classList.remove("hidden")
+    }
+}
+
+const renderizarTabelaNotas = (alunos) => {
+  const tbody = document.getElementById("grade-table-body")
+  tbody.innerHTML = ""
+  const listaReprovados = document.getElementById("failure-list")
+  listaReprovados.innerHTML = ""
+  let temReprovado = false
+
+  alunos.forEach(aluno => {
+      const status = getStatus(aluno)
+      const media = calcularMedia(aluno)
+      
+      const row = document.createElement("tr")
+      row.className = "hover:bg-gray-50 transition-colors border-b border-gray-100"
+      
+      row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${status.classe === 'status-desistente' ? 'status-desistente' : ''}">
+            ${aluno.nome}
+          </td>
+          <td class="px-2 py-4 text-center"><input type="number" data-id="${aluno.id}" data-field="u1" value="${aluno.u1 ?? ''}" max="10" step="0.1" class="w-20 text-center border border-gray-300 rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></td>
+          <td class="px-2 py-4 text-center"><input type="number" data-id="${aluno.id}" data-field="u2" value="${aluno.u2 ?? ''}" max="10" step="0.1" class="w-20 text-center border border-gray-300 rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></td>
+          <td class="px-2 py-4 text-center"><input type="number" data-id="${aluno.id}" data-field="u3" value="${aluno.u3 ?? ''}" max="10" step="0.1" class="w-20 text-center border border-gray-300 rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"></td>
+          <td class="px-2 py-4 text-center"><input type="number" data-id="${aluno.id}" data-field="freqGeral" value="${aluno.freqGeral}" max="100" class="w-20 text-center border border-gray-300 rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-bold text-gray-600"></td>
+          <td class="px-4 py-4 text-center font-bold text-gray-800 text-lg">${media !== null ? media.toFixed(1) : '-'}</td>
+          <td class="px-6 py-4 text-sm"><span class="${status.classe}">${status.texto}</span></td>
+      `
+      tbody.appendChild(row)
+
+      row.querySelectorAll('input').forEach(input => {
+          input.addEventListener('change', (e) => handleNotaChange(e, aluno))
+      })
+
+      if (status.classe.includes("reprovado") || status.classe.includes("desistente")) {
+          temReprovado = true
+          const li = document.createElement("li")
+          li.textContent = `${aluno.nome} - ${status.texto}`
+          listaReprovados.appendChild(li)
+      }
+  })
+  
+  const aviso = document.getElementById("failure-warning")
+  temReprovado ? aviso.classList.remove("hidden") : aviso.classList.add("hidden")
+}
+
+const renderizarTabelaFrequencia = (alunos) => {
+    const tbody = document.getElementById("freq-table-body")
+    tbody.innerHTML = ""
+    const dataAtual = appState.dataSelecionada
+
+    alunos.forEach(aluno => {
+        if (!aluno.chamada[dataAtual]) {
+            aluno.chamada[dataAtual] = [true, true, true, true, true, true]
+        }
+
+        const presencas = aluno.chamada[dataAtual]
+        const totalPresencasDia = presencas.filter(p => p).length
+        const percentDia = Math.round((totalPresencasDia / 6) * 100)
+
+        const row = document.createElement("tr")
+        row.className = "hover:bg-gray-50 transition-colors border-b border-gray-100"
+        
+        let htmlChecks = ""
+        for(let i=0; i<6; i++) {
+            htmlChecks += `
+              <td class="px-2 py-4 text-center border-l border-gray-100">
+                  <div class="flex justify-center items-center h-full">
+                    <input type="checkbox" 
+                        class="custom-checkbox" 
+                        title="Aula ${i+1}: ${HORARIOS[i]}"
+                        ${presencas[i] ? 'checked' : ''} 
+                        data-aluno="${aluno.id}" 
+                        data-aula="${i}">
+                  </div>
+              </td>
+            `
+        }
+
+        row.innerHTML = `
+            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white border-r border-gray-100 z-10">
+                ${aluno.nome}
+            </td>
+            ${htmlChecks}
+            <td class="px-4 py-4 text-center text-sm font-bold ${percentDia < 100 ? 'text-orange-500' : 'text-green-600'} border-l border-gray-200">
+              ${percentDia}%
+            </td>
+        `
+        tbody.appendChild(row)
+
+        row.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+            chk.addEventListener('change', (e) => handleFrequenciaChange(e, aluno, dataAtual))
+        })
+    })
 }
 
 const atualizarTela = () => {
-  popularSeletores()
-  renderizarTabela()
-}
+  renderizarControles()
+  
+  const alunos = db[appState.salaAtual][appState.materiaAtual]
+  const termo = appState.filtroBusca.toLowerCase()
+  const alunosFiltrados = alunos.filter(a => a.nome.toLowerCase().includes(termo))
 
-// --- 5. HANDLERS ---
-
-const handleLogin = (e) => {
-  e.preventDefault()
-  const user = document.getElementById("username").value
-  const pass = document.getElementById("password").value
-  const errorDiv = document.getElementById("login-error")
-
-  if (user === "admin" && pass === "123") {
-    document.getElementById("login-container").classList.add("hidden")
-    document.getElementById("app-container").classList.remove("hidden")
-    carregarDados()
-    atualizarTela()
+  if (appState.viewAtual === 'notas') {
+      renderizarTabelaNotas(alunosFiltrados)
   } else {
-    errorDiv.classList.remove("hidden")
+      renderizarTabelaFrequencia(alunosFiltrados)
   }
 }
 
-const handleLogout = () => {
-  document.getElementById("app-container").classList.add("hidden")
-  document.getElementById("login-container").classList.remove("hidden")
-  document.getElementById("login-error").classList.add("hidden")
-  document.getElementById("password").value = "123"
-  document.getElementById("username").value = "admin"
+const handleLogin = (e) => {
+  e.preventDefault()
+  const u = document.getElementById("username").value
+  const p = document.getElementById("password").value
+  
+  if (u === "admin" && p === "123") {
+      document.getElementById("login-container").classList.add("hidden")
+      document.getElementById("app-container").classList.remove("hidden")
+      carregarDados()
+      atualizarTela()
+  } else {
+      document.getElementById("login-error").classList.remove("hidden")
+  }
 }
 
-const handleNavegacao = () => {
+const handleNotaChange = (e, aluno) => {
+  let val = parseFloat(e.target.value)
+  const field = e.target.dataset.field
+  const max = field === 'freqGeral' ? 100 : 10
+  
+  if (isNaN(val)) val = null
+  if (val !== null) {
+      if (val < 0) val = 0
+      if (val > max) val = max
+  }
+  
+  aluno[field] = val
+  e.target.value = val 
+  
+  atualizarTela()
+}
+
+const handleFrequenciaChange = (e, aluno, data) => {
+    const aulaIndex = parseInt(e.target.dataset.aula)
+    const isPresente = e.target.checked
+    
+    aluno.chamada[data][aulaIndex] = isPresente
+    
+    const tr = e.target.closest('tr')
+    const checks = tr.querySelectorAll('input[type="checkbox"]')
+    const total = Array.from(checks).filter(c => c.checked).length
+    const perc = Math.round((total / 6) * 100)
+    
+    const tdResumo = tr.querySelector('td:last-child')
+    tdResumo.textContent = `${perc}%`
+    
+    if (perc < 100) {
+        tdResumo.classList.remove('text-green-600')
+        tdResumo.classList.add('text-orange-500')
+    } else {
+        tdResumo.classList.remove('text-orange-500')
+        tdResumo.classList.add('text-green-600')
+    }
+}
+
+document.getElementById("login-form").addEventListener("submit", handleLogin)
+
+document.getElementById("logout-button").addEventListener("click", () => window.location.reload())
+
+document.getElementById("save-button").addEventListener("click", salvarDados)
+
+document.getElementById("sala-selector").addEventListener("change", (e) => {
+    appState.salaAtual = e.target.value
+    appState.materiaAtual = Object.keys(db[appState.salaAtual])[0]
+    atualizarTela()
+})
+
+document.getElementById("materia-selector").addEventListener("change", (e) => {
+    appState.materiaAtual = e.target.value
+    atualizarTela()
+})
+
+document.getElementById("search-bar").addEventListener("input", (e) => {
+    appState.filtroBusca = e.target.value
+    atualizarTela()
+})
+
+document.getElementById("tab-notas").addEventListener("click", () => {
+    appState.viewAtual = 'notas'
+    atualizarTela()
+})
+
+document.getElementById("tab-freq").addEventListener("click", () => {
+    appState.viewAtual = 'freq'
+    atualizarTela()
+})
+
+document.getElementById("date-picker").addEventListener("change", (e) => {
+    appState.dataSelecionada = e.target.value
+    atualizarTela()
+})
+
+
+vegacao = () => {
   const salaSelecionada = document.getElementById("sala-selector").value
 
   if (salaSelecionada !== appState.salaAtual) {
